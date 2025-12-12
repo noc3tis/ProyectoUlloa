@@ -1,3 +1,4 @@
+//Este aun esta en desarrollo, asi que no le muevan
 const Spinner = () => {
     return (
         <div className='loadingSpinnerContainer'>
