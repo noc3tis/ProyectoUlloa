@@ -1,11 +1,56 @@
-//Este es igual que el login pero con mas inputs
-import React from 'react';
+import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { registro, reset } from '../features/authentication/authSlice';
+import axios from 'axios';
 
 const Registro = () => {
+const [formData, setFormData] = useState({
+        nombre: '',
+        email: '',
+        password: '',
+        password2: ''
+    });
+
+    const {nombre, email, password, password2} = formData;
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+
+    const onChange = (e) => {
+        setFormData((prevState) => ({
+            ...prevState,
+            [e.target.name]: e.target.value,
+        }));
+    };
+
+    const onSubmit = async (e) => {
+        e.preventDefault();
+
+        if (password !== password2) {
+            toast.error('Las contraseñas no coinciden');
+            return;
+        }
+
+        try {
+            const response = await axios.post('http://localhost:5000/api/usuarios', {
+                nombre,
+                email,
+                password
+            });
+
+            if (response.data) {
+                localStorage.se
+            }
+        }
+    }
+
     return (
         <>
             <section className='heading'>
                 <h1>Registro</h1>
+                <p>Por favor cree una cuenta</p>
             </section>
 
             <section className='form'>
