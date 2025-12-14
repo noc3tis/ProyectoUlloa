@@ -1,6 +1,6 @@
 const asyncHandler  = require('express-async-handler');
-const Medico = require('../modelos/ModeloMedico');
-const Usuario = require('../modelos/ModeloUsuarios');
+const Medico = require('../modelos/ModeloMedico.');
+const Usuario = require('../modelos/ModeloUsuario');
 
 
 const getMedicos = asyncHandler(async (req, res) => {

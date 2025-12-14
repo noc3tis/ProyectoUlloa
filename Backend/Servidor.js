@@ -1,7 +1,7 @@
 const express = require('express');
-const { errorHandler } = require('../middleware/errorMiddleware'); //Entre llaves para que solo sea una variable 
+const { errorHandler } = require('./middleware/errorMiddleware'); //Entre llaves para que solo sea una variable 
 const dotenv = require('dotenv').config();
-const dbConexion = require('../conexion/dbConexion');
+const dbConexion = require('./conexion/dbConexion');
 const cors = require('cors');
 
 

@@ -15,9 +15,9 @@ import './index.css';
  * Aquí mandamos llamar a todos los archivos que creamos en la carpeta 'components'.
  * Si crean una página nueva, TIENEN que importarla aquí para poder usarla.
  */
-import DashboardEspecialidades from './app/components/Dashboard(Especialidades)';
-import LogIn from './app/components/LogIn';
-import Registro from './app/components/Registro';
+import Dashboard from './app/pages/Dashboard';
+import LogIn from './app/pages/LogIn';
+import Registro from './app/pages/Registro';
 import Header from './app/components/Header';
 
 // Importamos las páginas específicas de cada especialidad médica
@@ -27,6 +27,7 @@ import Ginecologia from './app/components/Especialidades/Ginecologia';
 import MedicinaGeneral from './app/components/Especialidades/MedicinaGeneral';
 import Pediatria from './app/components/Especialidades/Pediatria';
 import Traumatologia from './app/components/Especialidades/Traumatologia';
+import FormularioCita from './app/pages/FormularioCita';
 
 
 function App() {
@@ -56,7 +57,7 @@ function App() {
            */}
 
           {/* Ruta Raíz: Es la página principal cuando entras directo */}
-          <Route path='/' element={<DashboardEspecialidades />}/>
+          <Route path='/' element={<Dashboard />} />
           
           {/* Rutas de acceso (Login y Registro) */}
           <Route path='/login' element={<LogIn />}/>
@@ -72,7 +73,7 @@ function App() {
           <Route path='/medicina' element={<MedicinaGeneral/>}/>
           <Route path='/pediatria' element={<Pediatria/>}/>
           <Route path='/traumatologia' element={<Traumatologia/>}/>
-          
+          <Route path='/agendar/:medicoId' element={<FormularioCita />} />
         </Routes>
 
       </div>

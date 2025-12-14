@@ -1,22 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { registro, reset } from '../features/authentication/authSlice';
-import axios from 'axios';
+// Asegúrate de que la ruta sea correcta (authSlice) y la acción se llame 'registrar' o 'registro' según tu slice
+import { registro, reset } from '../features/authentication/authSlice'; 
+import Spinner from '../components/Spinner'; // Asumiendo que tienes este componente
 
 const Registro = () => {
-const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState({
         nombre: '',
         email: '',
         password: '',
         password2: ''
     });
 
-    const {nombre, email, password, password2} = formData;
+    const { nombre, email, password, password2 } = formData;
+
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
+    // 1. Traemos el estado de Redux para saber qué pasó con la petición
+    const { user, isLoading, isError, isSuccess, message } = useSelector(
+        (state) => state.auth
+    );
+
+    // 2. useEffect: Vigila el estado. Si hay éxito, redirige. Si hay error, avisa.
+    useEffect(() => {
+        if (isError) {
+            toast.error(message);
+        }
+
+        if (isSuccess || user) {
+            navigate('/'); // Redirigir al Dashboard
+        }
+
+        dispatch(reset()); // Limpiar el estado al terminar
+    }, [user, isError, isSuccess, message, navigate, dispatch]);
 
     const onChange = (e) => {
         setFormData((prevState) => ({
@@ -25,25 +44,24 @@ const [formData, setFormData] = useState({
         }));
     };
 
-    const onSubmit = async (e) => {
+    const onSubmit = (e) => {
         e.preventDefault();
 
         if (password !== password2) {
             toast.error('Las contraseñas no coinciden');
-            return;
-        }
-
-        try {
-            const response = await axios.post('http://localhost:5000/api/usuarios', {
+        } else {
+            const userData = {
                 nombre,
                 email,
-                password
-            });
-
-            if (response.data) {
-                localStorage.se
-            }
+                password,
+            };
+            // 3. En lugar de axios, DISPARAMOS la acción de Redux
+            dispatch(registro(userData));
         }
+    };
+
+    if (isLoading) {
+        return <Spinner />;
     }
 
     return (
@@ -54,51 +72,55 @@ const [formData, setFormData] = useState({
             </section>
 
             <section className='form'>
-                <form>
+                <form onSubmit={onSubmit}>
                     {/* 1. Nombre Completo */}
                     <div className='form-group'>
-                        <input 
-                            type='text' 
-                            className='form-control' 
-                            id='nombre' 
-                            name='nombre'  
+                        <input
+                            type='text'
+                            className='form-control'
+                            id='nombre'
+                            name='nombre'
+                            value={nombre}           // <--- FALTABA ESTO
+                            onChange={onChange}      // <--- FALTABA ESTO
                             placeholder='Introduzca su nombre completo'
                         />
                     </div>
 
-                    {/* 2. Email (Será su usuario único) */}
+                    {/* 2. Email */}
                     <div className='form-group'>
-                        <input 
-                            type='email' 
-                            className='form-control' 
-                            id='email' 
-                            name='email' 
+                        <input
+                            type='email'
+                            className='form-control'
+                            id='email'
+                            name='email'
+                            value={email}            // <--- FALTABA ESTO
+                            onChange={onChange}      // <--- FALTABA ESTO
                             placeholder='Introduzca su email'
                         />
-                    </div>  
+                    </div>
 
-                    {/* 3. Contraseña Original */}
+                    {/* 3. Contraseña */}
                     <div className='form-group'>
-                        <input 
-                            type='password' 
-                            className='form-control' 
-                            id='password' 
-                            name='password' 
+                        <input
+                            type='password'
+                            className='form-control'
+                            id='password'
+                            name='password'
+                            value={password}         // <--- FALTABA ESTO
+                            onChange={onChange}      // <--- FALTABA ESTO
                             placeholder='Introduzca su contraseña'
                         />
                     </div>
 
-                    {/* 4. Confirmar Contraseña
-                     * Este campo es puro Frontend. No se manda a la base de datos.
-                     * Sirve para asegurar que el usuario no se equivocó al escribir.
-                     * OJO: Corregí el id 'password2' (antes decía pasword2)
-                     */ }
+                    {/* 4. Confirmar Contraseña */}
                     <div className='form-group'>
-                         <input 
-                            type='password' 
-                            className='form-control' 
-                            id='password2' 
-                            name='password2' 
+                        <input
+                            type='password'
+                            className='form-control'
+                            id='password2'
+                            name='password2'
+                            value={password2}        // <--- FALTABA ESTO
+                            onChange={onChange}      // <--- FALTABA ESTO
                             placeholder='Confirmar contraseña'
                         />
                     </div>
@@ -110,6 +132,6 @@ const [formData, setFormData] = useState({
             </section>
         </>
     );
-}
+};
 
 export default Registro;

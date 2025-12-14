@@ -4,11 +4,15 @@ import ReactDOM from 'react-dom/client';
 import './index.css'; //El index.css es el que le da estilo a toda la aplicacion en general, de momento no hay un estilo unico para cada parte de la app pero pueden hacerlo si quieren
 import App from './App';
 
+import { Provider } from 'react-redux';
+import store from '../src/app/Store';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store}> 
+      <App />
+    </Provider>
   </React.StrictMode>
 );
 
