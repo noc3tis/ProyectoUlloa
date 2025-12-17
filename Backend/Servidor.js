@@ -21,7 +21,7 @@ app.get('/api/prueba', (req, res) =>{
 app.use('/api/medicos', require('./rutas/rutasMedicos'));
 app.use('/api/citas', require('./rutas/rutasCitas'));
 
-
+//Manejador de errores
 app.use(errorHandler);
 
 app.listen(puerto, () => console.log(`Servidor escuchando en http://ns1.riosramos.jcarlos19.com.:${puerto}`));
