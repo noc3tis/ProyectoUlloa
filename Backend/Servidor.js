@@ -9,9 +9,10 @@ dbConexion();
 const puerto = process.env.PUERTO || 5000;
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
-app.use(cors());
+
 
 
 app.get('/api/prueba', (req, res) =>{
@@ -20,6 +21,7 @@ app.get('/api/prueba', (req, res) =>{
 
 app.use('/api/medicos', require('./rutas/rutasMedicos'));
 app.use('/api/citas', require('./rutas/rutasCitas'));
+app.use('/api/usuarios', require('./rutas/rutasUsuarios'));
 
 
 app.use(errorHandler);

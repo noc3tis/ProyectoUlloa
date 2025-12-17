@@ -9,14 +9,12 @@ const initialState = {
   message: '',
 };
 
-// Acción para crear cita
 export const crearCita = createAsyncThunk(
   'citas/crear',
-  async (datosCita, thunkAPI) => {
+  async (citaData, thunkAPI) => {
     try {
-      // Obtenemos el token del estado de Auth
       const token = thunkAPI.getState().auth.user.token;
-      return await citasService.crearCita(datosCita, token);
+      return await citasService.crearCita(citaData, token);
     } catch (error) {
       const message =
         (error.response && error.response.data && error.response.data.message) ||
@@ -27,26 +25,69 @@ export const crearCita = createAsyncThunk(
   }
 );
 
-export const obtenerCitas = createAsyncThunk('citas/obtener', async (_, thunkAPI) => {
+export const obtenerCitas = createAsyncThunk(
+  'citas/obtener',
+  async (_, thunkAPI) => {
     try {
-        const token = thunkAPI.getState().auth.user.token;
-        return await citasService.obtenerCitas(token);
+      const token = thunkAPI.getState().auth.user.token;
+      return await citasService.obtenerCitas(token);
     } catch (error) {
-        const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-        return thunkAPI.rejectWithValue(message);
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
     }
-});
+  }
+);
 
-// 2. Acción: CANCELAR CITA
-export const cancelarCita = createAsyncThunk('citas/cancelar', async (id, thunkAPI) => {
+export const cancelarCita = createAsyncThunk(
+  'citas/cancelar',
+  async (id, thunkAPI) => {
     try {
-        const token = thunkAPI.getState().auth.user.token;
-        return await citasService.cancelarCita(id, token);
+      const token = thunkAPI.getState().auth.user.token;
+      return await citasService.cancelarCita(id, token);
     } catch (error) {
-        const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-        return thunkAPI.rejectWithValue(message);
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
     }
-});
+  }
+);
+
+export const reprogramarCita = createAsyncThunk(
+  'citas/reprogramar',
+  async ({ id, datos }, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.user.token;
+      return await citasService.reprogramarCita(id, datos, token);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+export const obtenerCitasDoctor = createAsyncThunk(
+  'citas/obtenerDoctor',
+  async (_, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.user.token;
+      return await citasService.getCitasDoctor(token);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
 
 export const citasSlice = createSlice({
   name: 'citas',
@@ -69,25 +110,53 @@ export const citasSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
       })
-      .addCase(obtenerCitas.pending, (state) => { state.isLoading = true })
+      .addCase(obtenerCitas.pending, (state) => {
+        state.isLoading = true;
+      })
       .addCase(obtenerCitas.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.citas = action.payload; // Llenamos la lista
+        state.citas = action.payload;
       })
       .addCase(obtenerCitas.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
       })
-            // --- CASOS CANCELAR CITA ---
       .addCase(cancelarCita.fulfilled, (state, action) => {
         state.isLoading = false;
-        // Truco Pro: Buscamos la cita en la lista local y le cambiamos el estado a 'cancelada'
-        // para no tener que recargar toda la página.
-        state.citas = state.citas.map((cita) => 
-        cita._id === action.payload._id ? action.payload : cita
+        state.isSuccess = true;
+        state.citas = state.citas.filter(
+            (cita) => cita._id !== action.payload.id
         );
+      })
+      .addCase(reprogramarCita.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(reprogramarCita.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.citas = state.citas.map((cita) =>
+          cita._id === action.payload._id ? action.payload : cita
+        );
+      })
+      .addCase(reprogramarCita.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      .addCase(obtenerCitasDoctor.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(obtenerCitasDoctor.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.citas = action.payload;
+      })
+      .addCase(obtenerCitasDoctor.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
       });
   },
 });

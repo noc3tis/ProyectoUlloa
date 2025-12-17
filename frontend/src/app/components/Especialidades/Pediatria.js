@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { getMedicos, reset } from '../../features/medicos/medicoSlice';
 import Spinner from '../Spinner';
 
-const Pediatria = () => { // <--- 1. CAMBIAR NOMBRE DEL COMPONENTE (Ej: Dermatologia)
+const Pediatria = () => { 
   const dispatch = useDispatch();
 
   const { medicos, isLoading, isError, message } = useSelector(
@@ -19,28 +19,25 @@ const Pediatria = () => { // <--- 1. CAMBIAR NOMBRE DEL COMPONENTE (Ej: Dermatol
 
   if (isLoading) return <Spinner />;
 
-  // --- FILTRO DE ESPECIALIDAD ---
-  // IMPORTANTE: Este texto debe ser IDÉNTICO a como lo guardaste en la Base de Datos
-  const medicosFiltrados = medicos.filter(medico => 
-      medico.especialidad === 'Pediatria' // <--- 2. CAMBIAR AQUÍ LA ESPECIALIDAD
+  const pediatria = medicos.filter(medico => 
+      medico.especialidad === 'Pediatria'
   );
 
   return (
     <section className="content">
       <div className="heading">
-        {/* <--- 3. CAMBIAR EL TÍTULO VISUAL */}
-        <h1>Dermatología</h1> 
+        <h1>Pediatría</h1> 
         <p>Nuestros especialistas</p>
       </div>
 
-      {medicosFiltrados.length > 0 ? (
+      {pediatria.length > 0 ? (
         <div className="medicos-grid">
-          {medicosFiltrados.map((medico) => (
+          {pediatria.map((medico) => (
             <div key={medico._id} className="medico-card">
-              <h3>Dr. {medico.usuario.nombre}</h3>
+              <h3>{medico.nombre}</h3>
               <p>Consultorio: {medico.consultorio}</p>
-              <p>Horario: {medico.horarioAtencion.inicio} - {medico.horarioAtencion.fin}</p>
               <p>Costo: ${medico.precioConsulta}</p>
+              <p>Experiencia: {medico.experiencia}</p>
               
               <Link to={`/agendar/${medico._id}`} className="btn btn-reverse btn-block">
                 Agendar Cita
@@ -55,4 +52,4 @@ const Pediatria = () => { // <--- 1. CAMBIAR NOMBRE DEL COMPONENTE (Ej: Dermatol
   );
 };
 
-export default Pediatria; // <--- 4. EXPORTAR CON EL NOMBRE CORRECTO
+export default Pediatria; 

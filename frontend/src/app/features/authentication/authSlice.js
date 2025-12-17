@@ -14,11 +14,15 @@ const initialState = {
 export const registro = createAsyncThunk(
     'auth/registro',
     async (user, thunkAPI) => {
+        console.log("1. Entrando al Thunk de registro"); // <--- DEBUG
         try {
-            return await authService.registro(user);
+            console.log("2. Llamando a authService con datos:", user); // <--- CORREGIDO
+            
+            return await authService.register(user);
         } catch (error) {
-            const mensaje = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-            return thunkAPI.rejectWithValue(mensaje);
+            console.log("4. ERROR detectado en el Thunk:", error);     // <--- DEBUG
+            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+            return thunkAPI.rejectWithValue(message);
         }
     }
 );

@@ -6,6 +6,10 @@ const medicoSchema = mongoose.Schema({
         required: true,
         ref: 'Usuario'
     },
+    nombre: {
+        type: String,
+        required: true
+    },
     especialidad: {
         type: String,
         required: [true, 'Por favor indcia la especialidad']
@@ -26,7 +30,7 @@ const medicoSchema = mongoose.Schema({
         type: String
     }
 }, {
-    timestaps: true
+    timestamps: true
 });
 
 module.exports = mongoose.model('Medico', medicoSchema);

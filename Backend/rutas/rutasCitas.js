@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { agendarCita, obtenerMisCitas, cancelarCita, reprogramarCita } = require('../controladores/controladorCitas');
+const { agendarCita, obtenerMisCitas, getCitasDoctor, cancelarCita, reprogramarCita } = require('../controladores/controladorCitas');
 const { proteger } = require('../middleware/authMiddleware');
 
 router.post('/', proteger, agendarCita);
 router.get('/', proteger, obtenerMisCitas);
-router.put('/cancelar/:id', proteger, cancelarCita); // Cancelar
-router.put('/:id', proteger, reprogramarCita);       // Reprogramar
+router.get('/doctor', proteger, getCitasDoctor);
+router.route('/:id')
+    .delete(proteger, cancelarCita) 
+    .put(proteger, reprogramarCita) 
 
 module.exports = router;

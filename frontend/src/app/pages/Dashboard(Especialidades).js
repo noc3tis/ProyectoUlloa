@@ -1,66 +1,135 @@
-import React from 'react';
-/* * Importamos Link para la navegación. 
- * 'useNavigate' lo importaste, pero ojo: aquí NO se está usando. 
- * Se podría borrar para limpiar el código, pero no estorba.
- */
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
+import { obtenerCitas, cancelarCita, reprogramarCita, reset } from '../features/citas/citasSlice';
+import Spinner from '../components/Spinner';
+import { 
+    FaCalendarAlt, 
+    FaMapMarkerAlt, 
+    FaClock, 
+    FaUser, 
+    FaClipboardList,
+    FaStethoscope 
+} from 'react-icons/fa';
 
 const DashboardEspecialidades = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const { user } = useSelector((state) => state.auth);
+    const { citas, isLoading, isError, message } = useSelector((state) => state.citas);
+
+    useEffect(() => {
+        if (isError) console.log(message);
+        if (!user) navigate('/login');
+        else dispatch(obtenerCitas());
+
+        return () => { dispatch(reset()); };
+    }, [user, navigate, isError, message, dispatch]);
+
+    const handleCancelar = (id) => {
+        if (window.confirm('¿Estás seguro de cancelar esta cita? Esta acción liberará el horario.')) {
+            dispatch(cancelarCita(id));
+            toast.success('Cita cancelada correctamente');
+        }
+    };
+
+    const handleReprogramar = (cita) => {
+        const nuevaFechaStr = prompt("Ingresa la nueva fecha y hora (YYYY-MM-DD HH:MM):", "2025-12-20 10:00");
+        if (nuevaFechaStr) {
+            const nuevaFecha = new Date(nuevaFechaStr);
+            if (isNaN(nuevaFecha.getTime())) {
+                toast.error("Formato de fecha inválido");
+                return;
+            }
+            dispatch(reprogramarCita({ id: cita._id, datos: { fecha: nuevaFecha } }));
+            toast.success('Solicitud de cambio enviada');
+        }
+    };
+
+    if (isLoading) return <Spinner />;
+
     return (
         <>
-        {/* * TÍTULO DEL DASHBOARD
-         * Usamos las mismas clases 'heading' que en Login para mantener
-         * el estilo consistente (que se vea igual en toda la app).
-         */}
-        <section className='heading'>
-            <h1> Dashboard</h1>
-            <p>Nuestras especialidades:</p>
-        </section>
+            <section className='heading'>
+                <h1>Hola, {user && user.nombre} <FaUser size={20} color="#666"/></h1>
+                <p>¿Necesitas agendar una nueva consulta?</p>
+            </section>
 
-        {/* * BOTONES DE NAVEGACIÓN
-         * Aquí están los accesos directos a cada área del hospital.
-         * * NOTA TÉCNICA PARA LA CLASE:
-         * Estamos metiendo un <Link> dentro de un <button>. 
-         * Funciona, pero lo ideal en React es darle estilo de botón 
-         * directamente al <Link> usando CSS (className='btn').
-         * Pero para empezar, ¡así se entiende perfecto!
-         */}
-        <section>
-           
-           {/* Botón 1: Ginecología */}
-           <button>
-                {/* Al hacer clic, React Router cambia la URL a /ginecologia */}
-                <Link to='/ginecologia'> Ginecología y Obstetricia </Link>
-           </button>
+            <section className="contenedor-botones">
+                <button className='btn'><Link to='/ginecologia' style={{color:'white', textDecoration:'none'}}>Ginecología</Link></button>
+                <button className='btn'><Link to='/pediatria' style={{color:'white', textDecoration:'none'}}>Pediatría</Link></button>
+                <button className='btn'><Link to='/medicina' style={{color:'white', textDecoration:'none'}}>Medicina General</Link></button>
+                <button className='btn'><Link to='/traumatologia' style={{color:'white', textDecoration:'none'}}>Traumatología</Link></button>
+                <button className='btn'><Link to='/dermatologia' style={{color:'white', textDecoration:'none'}}>Dermatología</Link></button>
+                <button className='btn'><Link to='/cardiologia' style={{color:'white', textDecoration:'none'}}>Cardiología</Link></button>
+            </section>
 
-           {/* Botón 2: Pediatría */}
-           <button>
-                <Link to='/pediatria'>Pediatría</Link>
-           </button> 
-           
-           {/* Botón 3: Medicina General */}
-           <button>
-                <Link to='/medicina'>Medicina General</Link>
-           </button> 
-           
-           {/* Botón 4: Traumatología */}
-           <button>
-                <Link to='/traumatologia'>Traumatología</Link>
-           </button> 
-           
-           {/* Botón 5: Dermatologia */}
-           <button>
-                <Link to='/dermatologia'>Dermatología</Link>
-           </button>
+            <hr />
 
-           {/* Botón 6: Cardiología */}
-           <button>
-                <Link to='/cardiologia'>Cardiología</Link>
-           </button> 
+            <section className='heading'>
+                <h3><FaCalendarAlt /> Mis Citas Programadas</h3>
+            </section>
 
-        </section>
+            <section className="content">
+                {citas.length > 0 ? (
+                    <div className="citas-grid">
+                        {citas.map((cita) => (
+                            <div key={cita._id} className="cita-card">
+                                <div className="fecha-box">
+                                    <h4 className="icon-text" style={{justifyContent: 'center'}}>
+                                        <FaCalendarAlt /> {new Date(cita.fecha).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}
+                                    </h4>
+                                    <h3 className="icon-text" style={{justifyContent: 'center'}}>
+                                        <FaClock /> {new Date(cita.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </h3>
+                                </div>
+                                
+                                <div className="info-box">
+                                    <h5 className="icon-text">
+                                        <FaStethoscope /> Dr. {cita.medico ? cita.medico.nombre : 'Médico no disponible'}
+                                    </h5>
+                                    <p className="text-muted" style={{marginLeft: '24px'}}>
+                                        {cita.medico ? cita.medico.especialidad : ''}
+                                    </p>
+                                    
+                                    <p className="icon-text">
+                                        <FaMapMarkerAlt color="var(--primary)"/> 
+                                        {cita.medico ? cita.medico.consultorio : ''}
+                                    </p>
+
+                                    <p className="icon-text">
+                                        <FaClipboardList /> Estado: <strong>{cita.estado}</strong>
+                                    </p>
+                                    
+                                    <div className="acciones-botones">
+                                        <button 
+                                            className="btn btn-sm btn-primary" 
+                                            onClick={() => handleReprogramar(cita)}
+                                        >
+                                            Reprogramar
+                                        </button>
+                                        <button 
+                                            className="btn btn-sm btn-danger" 
+                                            onClick={() => handleCancelar(cita._id)}
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                        <h3>No tienes citas próximas.</h3>
+                        <p>Selecciona una especialidad arriba para agendar.</p>
+                    </div>
+                )}
+            </section>
         </>
     );
-}
+};
 
 export default DashboardEspecialidades;

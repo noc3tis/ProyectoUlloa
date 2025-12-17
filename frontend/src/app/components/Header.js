@@ -1,41 +1,63 @@
 import React from 'react';
-/* * IMPORTANTE: <Link> vs <a>
- * Importamos 'Link' de react-router-dom.
- * * Pregunta de examen: ¿Por qué no usamos <a href="/login">?
- * R= Porque la etiqueta <a> recarga TODA la página (pantallazo blanco).
- * El componente <Link> cambia la URL internamente sin recargar nada.
- * ¡Eso hace que la app se sienta instantánea!
- */
 import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout, reset } from '../features/authentication/authSlice';
+import { FaHospitalUser, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaUserMd } from 'react-icons/fa';
 
 const Header = () => {
-    return (
-        /* * Usamos la clase 'header' que definimos en index.css 
-         * para que tenga el borde abajo y se acomode bonito (Flexbox).
-         */
-        <header className="header">
-            <ul>
-                {/* * BOTÓN DE LOGIN
-                 * Al hacer clic, React Router busca la ruta '/login' en App.js
-                 * y muestra el componente <LogIn />.
-                 */}
-                <li>
-                    <Link to='/login'>
-                        Login
-                    </Link>
-                </li>
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-                {/* * BOTÓN DE REGISTRO
-                 * Mismo caso, nos lleva a la pantalla de crear cuenta.
-                 */}
-                <li>
-                    <Link to='/registro'>
-                        Registro
-                    </Link>
-                </li>
+    const { user } = useSelector((state) => state.auth);
+
+    const onLogout = () => {
+        dispatch(logout());
+        
+        dispatch(reset());
+        
+        navigate('/login');
+    };
+
+    return (
+        <header className="header">
+            <Link to="/" style={{display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit'}}>
+                <FaHospitalUser size={24} /> <span>DocApp</span>
+            </Link>
+
+            <ul>
+                {user ? (
+                    <>
+                        <li style={{marginRight: '15px', fontWeight: 'bold'}}>
+                            Hola, {user.nombre}
+                        </li>
+
+                        {user.rol === 'medico' && (
+                            <li>
+                                <Link to='/perfil-medico' className="btn-perfil">
+                                    Mi Perfil
+                                </Link>
+                            </li>
+                        )}
+
+                        <li>
+                            <button className="btn btn-logout" onClick={onLogout}>
+                                Salir
+                            </button>
+                        </li>
+                    </>
+                ) : (
+                    <>
+                        <li>
+                            <Link to='/login'>Login</Link>
+                        </li>
+                        <li>
+                            <Link to='/registro'>Registro</Link>
+                        </li>
+                    </>
+                )}
             </ul>
         </header>
     );
-}
+};
 
 export default Header;

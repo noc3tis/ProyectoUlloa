@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { login, reset } from '../features/authentication/authSlice'; // Importamos la acción login
-import Spinner from '../components/Spinner'; // Asegúrate de tener este componente
+import { login, reset } from '../features/authentication/authSlice'; 
+import Spinner from '../components/Spinner'; 
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -16,22 +16,24 @@ const Login = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    // 1. Traemos los datos del estado global
     const { user, isLoading, isError, isSuccess, message } = useSelector(
         (state) => state.auth
     );
 
-    // 2. useEffect: Vigila si el login fue exitoso
     useEffect(() => {
         if (isError) {
-            toast.error(message); // Muestra error si falla (ej: "Contraseña incorrecta")
+            toast.error(message); 
         }
 
         if (isSuccess || user) {
-            navigate('/'); // Si todo sale bien, mándalo al Dashboard
-        }
+      if (user && user.rol === 'medico') {
+        navigate('/doctor-dashboard')
+      } else {
+        navigate('/')
+      }
+    }
 
-        dispatch(reset()); // Limpia el estado
+        dispatch(reset()); 
     }, [user, isError, isSuccess, message, navigate, dispatch]);
 
     const onChange = (e) => {
@@ -48,8 +50,6 @@ const Login = () => {
             email,
             password,
         };
-
-        // 3. Disparamos la acción de Login de Redux
         dispatch(login(userData));
     };
 
@@ -67,27 +67,25 @@ const Login = () => {
             <section className='form'>
                 <form onSubmit={onSubmit}>
                     <div className='form-group'>
-                        {/* Input del Email */}
                         <input
                             type='email'
                             className='form-control'
                             id='email'
                             name='email'
-                            value={email}            // <--- VINCULADO AL ESTADO
-                            onChange={onChange}      // <--- DETECTA CAMBIOS
+                            value={email}            
+                            onChange={onChange}     
                             placeholder='Introduzca su email'
                         />
                     </div>
 
                     <div className='form-group'>
-                        {/* Input del Password */}
                         <input
                             type='password'
                             className='form-control'
                             id='password'
                             name='password'
-                            value={password}         // <--- VINCULADO AL ESTADO
-                            onChange={onChange}      // <--- DETECTA CAMBIOS
+                            value={password}         
+                            onChange={onChange}     
                             placeholder='Introduzca su contraseña'
                         />
                     </div>

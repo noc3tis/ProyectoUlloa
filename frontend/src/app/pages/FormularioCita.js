@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import Spinner from '../components/Spinner';
 
 const FormularioCita = () => {
-  const { medicoId } = useParams(); // Obtenemos el ID del médico de la URL
+  const { medicoId } = useParams(); 
   
   const [formData, setFormData] = useState({
     fecha: '',
@@ -28,7 +28,7 @@ const FormularioCita = () => {
     }
     if (isSuccess) {
       toast.success('¡Cita agendada con éxito!');
-      navigate('/'); // Volver al inicio
+      navigate('/'); 
     }
     dispatch(reset());
   }, [isError, isSuccess, message, navigate, dispatch]);
@@ -41,9 +41,10 @@ const FormularioCita = () => {
   };
 
   const onSubmit = (e) => {
+
     e.preventDefault();
-    // Enviamos: ID del médico (URL) + Datos del form (State)
-    dispatch(crearCita({ medico: medicoId, fecha, hora, notas }));
+    const fechaCombinada = new Date(`${fecha}T${hora}`);
+    dispatch(crearCita({ medico: medicoId, fecha: fechaCombinada, notas }));
   };
 
   if (isLoading) return <Spinner />;

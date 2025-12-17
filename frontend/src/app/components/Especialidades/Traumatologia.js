@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { getMedicos, reset } from '../../features/medicos/medicoSlice';
 import Spinner from '../Spinner';
 
-const Traumatologia = () => { // <--- 1. CAMBIAR NOMBRE DEL COMPONENTE (Ej: Dermatologia)
+const Traumatologia = () => { 
   const dispatch = useDispatch();
 
   const { medicos, isLoading, isError, message } = useSelector(
@@ -19,29 +19,25 @@ const Traumatologia = () => { // <--- 1. CAMBIAR NOMBRE DEL COMPONENTE (Ej: Derm
 
   if (isLoading) return <Spinner />;
 
-  // --- FILTRO DE ESPECIALIDAD ---
-  // IMPORTANTE: Este texto debe ser IDÉNTICO a como lo guardaste en la Base de Datos
-  const medicosFiltrados = medicos.filter(medico => 
-      medico.especialidad === 'Traumatologia' // <--- 2. CAMBIAR AQUÍ LA ESPECIALIDAD
+  const traumatologos = medicos.filter(medico => 
+      medico.especialidad === 'Traumatologia' 
   );
 
   return (
     <section className="content">
       <div className="heading">
-        {/* <--- 3. CAMBIAR EL TÍTULO VISUAL */}
-        <h1>Dermatología</h1> 
-        <p>Nuestros especialistas</p>
+        <h1>Traumatología</h1> 
+        <p>Nuestros especialistas:</p>
       </div>
 
-      {medicosFiltrados.length > 0 ? (
+      {traumatologos.length > 0 ? (
         <div className="medicos-grid">
-          {medicosFiltrados.map((medico) => (
+          {traumatologos.map((medico) => (
             <div key={medico._id} className="medico-card">
-              <h3>Dr. {medico.usuario.nombre}</h3>
+              <h3>{medico.nombre}</h3>
               <p>Consultorio: {medico.consultorio}</p>
-              <p>Horario: {medico.horarioAtencion.inicio} - {medico.horarioAtencion.fin}</p>
               <p>Costo: ${medico.precioConsulta}</p>
-              
+              <p>Experiencia: {medico.experiencia}</p>
               <Link to={`/agendar/${medico._id}`} className="btn btn-reverse btn-block">
                 Agendar Cita
               </Link>
@@ -55,4 +51,4 @@ const Traumatologia = () => { // <--- 1. CAMBIAR NOMBRE DEL COMPONENTE (Ej: Derm
   );
 };
 
-export default Traumatologia; // <--- 4. EXPORTAR CON EL NOMBRE CORRECTO
+export default Traumatologia; 

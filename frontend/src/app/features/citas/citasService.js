@@ -1,12 +1,11 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/citas/';
+const API_URL = 'http://160.34.208.217:8000/api/citas/';
 
-// Crear nueva cita
 const crearCita = async (datosCita, token) => {
   const config = {
     headers: {
-      Authorization: `Bearer ${token}`, // Necesitamos el token para saber quién es el paciente
+      Authorization: `Bearer ${token}`, 
     },
   };
 
@@ -20,18 +19,44 @@ const obtenerCitas = async (token) => {
   return response.data;
 };
 
-// Cancelar cita
 const cancelarCita = async (id, token) => {
-  const config = { headers: { Authorization: `Bearer ${token}` } };
-  // Nota la ruta: /api/citas/cancelar/ID
-  const response = await axios.put(API_URL + 'cancelar/' + id, {}, config);
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  const response = await axios.delete(API_URL + id, config);
+
+  return response.data;
+};
+const reprogramarCita = async (citaId, nuevosDatos, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    }
+    const response = await axios.put(API_URL + citaId, nuevosDatos, config)
+    return response.data
+}
+
+const getCitasDoctor = async (token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const response = await axios.get(API_URL + 'doctor', config);
+
   return response.data;
 };
 
 const citasService = {
   crearCita,
-  obtenerCitas, // <--- Agregar
-  cancelarCita, // <--- Agregar
+  obtenerCitas, 
+  cancelarCita, 
+  reprogramarCita,
+  getCitasDoctor
 };
 
 export default citasService;

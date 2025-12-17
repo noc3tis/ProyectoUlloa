@@ -9,15 +9,16 @@ const citaSchema = mongoose.Schema({
     medico: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: 'Medico'
+        ref: 'Medico' 
     },
-    hora: {
-        type: String,
-        required: [true, 'Por favor selecciona una hora']
+    fecha: {
+        type: Date,
+        required: [true, 'Por favor selecciona una fecha y hora']
     },
+    
     estado: {
         type: String,
-        enum: ['pendiente', ' confirmada', 'cancelada', 'completada'],
+        enum: ['pendiente', 'confirmada', 'cancelada', 'completada'], 
         default: 'pendiente'
     },
     notas: {
@@ -25,7 +26,7 @@ const citaSchema = mongoose.Schema({
         default: ''
     }
 }, {
-    timestaps: true
+    timestamps: true 
 });
 
 module.exports = mongoose.model('Cita', citaSchema);

@@ -2,34 +2,66 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import medicoService from './medicoService';
 
 const initialState = {
-  medicos: [],        // Aquí se guardará la lista de doctores
+  medicos: [],        
+  perfil: null,       
   isError: false,
   isSuccess: false,
   isLoading: false,
   message: '',
 };
 
-// Obtener médicos (Acción asíncrona)
 export const getMedicos = createAsyncThunk(
   'medicos/getAll',
   async (_, thunkAPI) => {
     try {
       return await medicoService.getMedicos();
     } catch (error) {
-      const message =
-        (error.response && error.response.data && error.response.data.message) ||
-        error.message ||
-        error.toString();
+      const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
       return thunkAPI.rejectWithValue(message);
     }
   }
+);
+
+export const crearPerfilMedico = createAsyncThunk(
+  'medicos/crear',
+  async (medicoData, thunkAPI) => {
+    try {
+      const authState = thunkAPI.getState().auth;
+      if (!authState || !authState.user) {
+         return thunkAPI.rejectWithValue("No hay usuario logueado");
+      }
+      const token = authState.user.token; 
+      return await medicoService.crearPerfil(medicoData, token);
+    } catch (error) {
+      const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+export const obtenerPerfilMedico = createAsyncThunk(
+    'medicos/obtenerPerfil',
+    async (_, thunkAPI) => {
+        try {
+            const token = thunkAPI.getState().auth.user.token;
+            return await medicoService.obtenerPerfil(token); 
+        } catch (error) {
+            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
 );
 
 export const medicoSlice = createSlice({
   name: 'medico',
   initialState,
   reducers: {
-    reset: (state) => initialState, // Para limpiar el estado si es necesario
+    reset: (state) => {
+      state.isLoading = false;
+      state.isSuccess = false;
+      state.isError = false;
+      state.message = '';
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -39,9 +71,35 @@ export const medicoSlice = createSlice({
       .addCase(getMedicos.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.medicos = action.payload; // ¡Aquí guardamos los datos que vienen de la BD!
+        state.medicos = action.payload; 
       })
       .addCase(getMedicos.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      .addCase(crearPerfilMedico.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(crearPerfilMedico.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.perfil = action.payload; 
+      })
+      .addCase(crearPerfilMedico.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+
+      .addCase(obtenerPerfilMedico.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(obtenerPerfilMedico.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.perfil = action.payload; 
+      })
+      .addCase(obtenerPerfilMedico.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
