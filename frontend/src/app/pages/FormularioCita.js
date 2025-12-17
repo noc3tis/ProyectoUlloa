@@ -6,8 +6,12 @@ import { toast } from 'react-toastify';
 import Spinner from '../components/Spinner';
 
 const FormularioCita = () => {
+  // ROUTING AVANZADO:
+  // Capturamos el parámetro 'medicoId' que viene en la URL (/agendar/:medicoId).
   const { medicoId } = useParams(); 
   
+  // FORMULARIO CONTROLADO:
+  // Usamos useState para mantener el control total de los inputs.
   const [formData, setFormData] = useState({
     fecha: '',
     hora: '',
@@ -22,6 +26,9 @@ const FormularioCita = () => {
     (state) => state.citas
   );
 
+  // EFECTO DE NAVEGACIÓN:
+  // Escuchamos los cambios en el estado global.
+  // Si la creación fue exitosa (isSuccess), redirigimos al Dashboard.
   useEffect(() => {
     if (isError) {
       toast.error(message);
@@ -41,9 +48,12 @@ const FormularioCita = () => {
   };
 
   const onSubmit = (e) => {
-
     e.preventDefault();
+    // Preparación de Datos:
+    // Combinamos fecha y hora en un objeto Date estándar ISO.
     const fechaCombinada = new Date(`${fecha}T${hora}`);
+    
+    // Disparamos la acción de crear cita con los datos procesados.
     dispatch(crearCita({ medico: medicoId, fecha: fechaCombinada, notas }));
   };
 
@@ -58,6 +68,7 @@ const FormularioCita = () => {
 
       <section className="form">
         <form onSubmit={onSubmit}>
+          {/* Inputs vinculados al state mediante 'value' y 'onChange' */}
           <div className="form-group">
             <label>Fecha</label>
             <input

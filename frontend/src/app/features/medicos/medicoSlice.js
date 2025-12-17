@@ -2,8 +2,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import medicoService from './medicoService';
 
 const initialState = {
-  medicos: [],        
-  perfil: null,       
+  medicos: [],        // Catálogo público
+  perfil: null,       // Perfil privado (Si soy médico)
   isError: false,
   isSuccess: false,
   isLoading: false,
@@ -26,6 +26,7 @@ export const crearPerfilMedico = createAsyncThunk(
   'medicos/crear',
   async (medicoData, thunkAPI) => {
     try {
+      // Verificación de integridad: Aseguramos que existe un usuario antes de pedir el token.
       const authState = thunkAPI.getState().auth;
       if (!authState || !authState.user) {
          return thunkAPI.rejectWithValue("No hay usuario logueado");
@@ -65,6 +66,7 @@ export const medicoSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Manejo del Catálogo Público
       .addCase(getMedicos.pending, (state) => {
         state.isLoading = true;
       })
@@ -78,6 +80,8 @@ export const medicoSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
       })
+
+      // Manejo de Creación de Perfil
       .addCase(crearPerfilMedico.pending, (state) => {
         state.isLoading = true;
       })
@@ -92,6 +96,7 @@ export const medicoSlice = createSlice({
         state.message = action.payload;
       })
 
+      // Manejo de Lectura de Perfil Propio
       .addCase(obtenerPerfilMedico.pending, (state) => {
         state.isLoading = true;
       })

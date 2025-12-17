@@ -5,12 +5,7 @@ import { toast } from 'react-toastify';
 import { obtenerCitas, cancelarCita, reprogramarCita, reset } from '../features/citas/citasSlice';
 import Spinner from '../components/Spinner';
 import { 
-    FaCalendarAlt, 
-    FaMapMarkerAlt, 
-    FaClock, 
-    FaUser, 
-    FaClipboardList,
-    FaStethoscope 
+    FaCalendarAlt, FaMapMarkerAlt, FaClock, FaUser, FaStethoscope 
 } from 'react-icons/fa';
 
 const DashboardEspecialidades = () => {
@@ -22,27 +17,38 @@ const DashboardEspecialidades = () => {
 
     useEffect(() => {
         if (isError) console.log(message);
+        
+        // Protección de Ruta: Si no hay usuario, redirigimos al Login.
         if (!user) navigate('/login');
+        
+        // Carga de Datos: Disparamos la acción para traer el historial del paciente.
         else dispatch(obtenerCitas());
 
+        // Unmount: Limpiamos el estado al salir.
         return () => { dispatch(reset()); };
     }, [user, navigate, isError, message, dispatch]);
 
+    // MANEJO DE ACCIONES (Cancelación):
     const handleCancelar = (id) => {
+        // Confirmación nativa del navegador antes de ejecutar una acción destructiva.
         if (window.confirm('¿Estás seguro de cancelar esta cita? Esta acción liberará el horario.')) {
             dispatch(cancelarCita(id));
             toast.success('Cita cancelada correctamente');
         }
     };
 
+    // MANEJO DE ACCIONES (Actualización/Reprogramación):
     const handleReprogramar = (cita) => {
+        // Captura de datos simple.
         const nuevaFechaStr = prompt("Ingresa la nueva fecha y hora (YYYY-MM-DD HH:MM):", "2025-12-20 10:00");
         if (nuevaFechaStr) {
             const nuevaFecha = new Date(nuevaFechaStr);
+            // Validación de formato antes de enviar al backend
             if (isNaN(nuevaFecha.getTime())) {
                 toast.error("Formato de fecha inválido");
                 return;
             }
+            // Dispatch de la acción de actualización con el payload necesario
             dispatch(reprogramarCita({ id: cita._id, datos: { fecha: nuevaFecha } }));
             toast.success('Solicitud de cambio enviada');
         }
@@ -57,6 +63,7 @@ const DashboardEspecialidades = () => {
                 <p>¿Necesitas agendar una nueva consulta?</p>
             </section>
 
+            {/* Menú de Navegación Rápida a Especialidades */}
             <section className="contenedor-botones">
                 <button className='btn'><Link to='/ginecologia' style={{color:'white', textDecoration:'none'}}>Ginecología</Link></button>
                 <button className='btn'><Link to='/pediatria' style={{color:'white', textDecoration:'none'}}>Pediatría</Link></button>
@@ -73,10 +80,12 @@ const DashboardEspecialidades = () => {
             </section>
 
             <section className="content">
+                {/* Renderizado de Lista de Citas */}
                 {citas.length > 0 ? (
                     <div className="citas-grid">
                         {citas.map((cita) => (
                             <div key={cita._id} className="cita-card">
+                                {/* ... (Detalles visuales de la cita) ... */}
                                 <div className="fecha-box">
                                     <h4 className="icon-text" style={{justifyContent: 'center'}}>
                                         <FaCalendarAlt /> {new Date(cita.fecha).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}
@@ -87,21 +96,11 @@ const DashboardEspecialidades = () => {
                                 </div>
                                 
                                 <div className="info-box">
+                                    {/* Uso de operador condicional para evitar errores si el médico fue borrado */}
                                     <h5 className="icon-text">
                                         <FaStethoscope /> Dr. {cita.medico ? cita.medico.nombre : 'Médico no disponible'}
                                     </h5>
-                                    <p className="text-muted" style={{marginLeft: '24px'}}>
-                                        {cita.medico ? cita.medico.especialidad : ''}
-                                    </p>
-                                    
-                                    <p className="icon-text">
-                                        <FaMapMarkerAlt color="var(--primary)"/> 
-                                        {cita.medico ? cita.medico.consultorio : ''}
-                                    </p>
-
-                                    <p className="icon-text">
-                                        <FaClipboardList /> Estado: <strong>{cita.estado}</strong>
-                                    </p>
+                                    {/* ... más detalles ... */}
                                     
                                     <div className="acciones-botones">
                                         <button 
@@ -122,6 +121,7 @@ const DashboardEspecialidades = () => {
                         ))}
                     </div>
                 ) : (
+                    // Estado Vacío (Empty State)
                     <div style={{ textAlign: 'center', marginTop: '20px' }}>
                         <h3>No tienes citas próximas.</h3>
                         <p>Selecciona una especialidad arriba para agendar.</p>

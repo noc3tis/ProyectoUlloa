@@ -3,18 +3,22 @@ const Medico = require('../modelos/ModeloMedico.');
 const Usuario = require('../modelos/ModeloUsuario');
 
 const getMedicos = asyncHandler(async (req, res) => {
+    // Traemos todos los médicos 
     const medicos = await Medico.find().populate('usuario', 'nombre email');
 
     res.status(200).json(medicos);
 });
 
+// Lógica para crear o actualizar perfil 
 const updatePerfilMedico = asyncHandler(async (req, res) => {
     
+    // Seguridad: Verificamos autenticación
     if (!req.usuario) {
         res.status(401);
         throw new Error('Usuario no autenticado');
     }
 
+    // Seguridad: Validación de Roles. Solo médicos pueden tocar esto.
     if (req.usuario.rol !== 'medico') {
         res.status(403);
         throw new Error('Acción no válida: Solo los médicos tienen perfil profesional');
@@ -22,9 +26,11 @@ const updatePerfilMedico = asyncHandler(async (req, res) => {
 
     const { especialidad, consultorio, horarioAtencion, precioConsulta, experiencia } = req.body;
 
+    // Buscamos si ya existe el perfil
     let perfilMedico = await Medico.findOne({ usuario: req.usuario.id });
 
     if (perfilMedico) {
+        // Si existe, actualizamos solo los campos que enviaron
         perfilMedico.nombre = req.usuario.nombre;
         perfilMedico.especialidad = especialidad || perfilMedico.especialidad;
         perfilMedico.consultorio = consultorio || perfilMedico.consultorio;
@@ -36,6 +42,7 @@ const updatePerfilMedico = asyncHandler(async (req, res) => {
         res.status(200).json(perfilActualizado);
 
     } else {
+        // Si no existe, creamos uno nuevo (Primera vez del médico en la app)
         const nuevoPerfil = await Medico.create({
             usuario: req.usuario.id,
             nombre: req.usuario.nombre,

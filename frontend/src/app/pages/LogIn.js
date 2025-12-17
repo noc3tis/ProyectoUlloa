@@ -6,6 +6,7 @@ import { login, reset } from '../features/authentication/authSlice';
 import Spinner from '../components/Spinner'; 
 
 const Login = () => {
+    // Estado local para los campos del formulario
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -16,6 +17,7 @@ const Login = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
+    // Suscripción al estado de Auth
     const { user, isLoading, isError, isSuccess, message } = useSelector(
         (state) => state.auth
     );
@@ -25,13 +27,16 @@ const Login = () => {
             toast.error(message); 
         }
 
+        // REDIRECCIÓN INTELIGENTE POST-LOGIN:
+        // Una vez que el estado cambia a Success o detectamos un usuario:
         if (isSuccess || user) {
-      if (user && user.rol === 'medico') {
-        navigate('/doctor-dashboard')
-      } else {
-        navigate('/')
-      }
-    }
+            // Verificamos el rol para decidir a dónde enviarlo.
+            if (user && user.rol === 'medico') {
+                navigate('/doctor-dashboard')
+            } else {
+                navigate('/')
+            }
+        }
 
         dispatch(reset()); 
     }, [user, isError, isSuccess, message, navigate, dispatch]);
@@ -50,6 +55,7 @@ const Login = () => {
             email,
             password,
         };
+        // Disparamos la acción de Login (Thunk)
         dispatch(login(userData));
     };
 

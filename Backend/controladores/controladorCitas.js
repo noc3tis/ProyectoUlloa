@@ -1,32 +1,36 @@
-const asyncHandler  = require('express-async-handler');
+const asyncHandler  = require('express-async-handler'); // Middleware para manejar errores en promesas sin tanto try-catch sucio
 const Cita = require('../modelos/ModeloCita');
 const sendEmail = require('../utils/Email');
 const Medico = require('../modelos/ModeloMedico.');
+
+// --- Lógica para Crear Cita (CRUD: Create) ---
 const agendarCita = asyncHandler(async (req, res) => {
     const { medico, fecha, notas } = req.body;
 
+    // Si faltan datos, rechazamos la petición antes de tocar la BD
     if (!medico || !fecha) {
         res.status(400);
         throw new Error('Por favor rellena los campos necesarios');
     }
 
+    // Creamos el documento en Mongo relacionándolo con el usuario autenticado
     const cita = await Cita.create({
-        paciente: req.usuario.id,
+        paciente: req.usuario.id, // Usamos el ID que el middleware ya nos inyectó
         medico,
         fecha,
         notas,
         estado: 'pendiente'
     });
 
-
+    // --- Extra: Envío de correo de confirmación ---
     try {
-        
+        // Buscamos al médico para poner su nombre en el correo
         const datosMedico = await Medico.findById(medico);
         
         const nombreMedico = datosMedico ? datosMedico.nombre : 'Por asignar';
         const ubicacionMedico = datosMedico ? datosMedico.consultorio : 'Consultorio pendiente';
 
-       
+        // Formateamos la fecha para que el usuario la entienda (UX)
         const fechaLegible = new Date(fecha).toLocaleString('es-MX', { 
             timeZone: 'America/Mexico_City', 
             weekday: 'long', 
@@ -37,6 +41,7 @@ const agendarCita = asyncHandler(async (req, res) => {
             minute: '2-digit' 
         });
 
+        // Plantilla HTML simple para el correo 
         const mensajeHTML = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background-color: #fdfdfd;">
                 <h2 style="color: #2c3e50; text-align: center;">¡Cita Confirmada! ✅</h2>
@@ -56,6 +61,7 @@ const agendarCita = asyncHandler(async (req, res) => {
             </div>
         `;
 
+        // Mandamos el mail usando el utilitario que configuramos (Nodemailer/SendGrid)
         await sendEmail({
             email: req.usuario.email,
             subject: `Confirmación de Cita con Dr. ${nombreMedico}`,
@@ -64,22 +70,27 @@ const agendarCita = asyncHandler(async (req, res) => {
         });
 
     } catch (error) {
+        // Si falla el correo, no tiramos el server, solo avisamos en consola
         console.log("No se pudo enviar el correo de confirmación:", error.message);
     }
 
     res.status(201).json(cita);
 });
 
+// --- Lógica para Leer Citas (CRUD: Read) ---
 const obtenerMisCitas = asyncHandler(async (req, res) => {
     
+    // Aquí usamos las relaciones en Mongo:
+    // Usamos .populate() para traernos los datos del médico (nombre, especialidad)
     const citas = await Cita.find({ paciente: req.usuario.id })
         .populate('medico', 'nombre especialidad consultorio') 
-        .sort({ fecha: 1 }); // Ordenadas por fecha
+        .sort({ fecha: 1 }); // Ordenadas por fecha para mejor UX
 
     res.status(200).json(citas);
     
 });
 
+// --- Lógica para Borrar (CRUD: Delete) ---
 const cancelarCita = asyncHandler(async (req, res) => {
     const cita = await Cita.findById(req.params.id);
 
@@ -88,8 +99,8 @@ const cancelarCita = asyncHandler(async (req, res) => {
         throw new Error('Cita no encontrada');
     }
 
+    // Seguridad: Verificamos que quien cancela sea el dueño de la cita o el médico encargado
     const esPaciente = cita.paciente.toString() === req.usuario.id;
-
     const perfilMedico = await Medico.findOne({ usuario: req.usuario.id });
     const esMedico = perfilMedico && cita.medico.toString() === perfilMedico.id;
 
@@ -103,6 +114,7 @@ const cancelarCita = asyncHandler(async (req, res) => {
     res.status(200).json({ id: req.params.id });
 });
 
+// --- Lógica para Actualizar (CRUD: Update) ---
 const reprogramarCita = asyncHandler(async (req, res) => {
     const cita = await Cita.findById(req.params.id);
 
@@ -111,11 +123,9 @@ const reprogramarCita = asyncHandler(async (req, res) => {
         throw new Error('Cita no encontrada');
     }
 
-
+    // Validación de permisos nuevamente (Seguridad)
     const esPaciente = cita.paciente.toString() === req.usuario.id;
-
     const perfilMedico = await Medico.findOne({ usuario: req.usuario.id });
-    
     const esMedico = perfilMedico && cita.medico.toString() === perfilMedico.id;
 
     if (!esPaciente && !esMedico) {
@@ -130,12 +140,14 @@ const reprogramarCita = asyncHandler(async (req, res) => {
         throw new Error('Debes proporcionar una nueva fecha');
     }
 
+    // Actualizamos y pedimos que nos regrese el documento nuevo (new: true)
     let citaActualizada = await Cita.findByIdAndUpdate(
         req.params.id,
         { fecha },
         { new: true } 
     );
 
+    // El frontend recibe los nombres completos
     citaActualizada = await citaActualizada.populate([
         { path: 'paciente', select: 'nombre email' },
         { path: 'medico', select: 'nombre especialidad consultorio' }
@@ -152,9 +164,6 @@ const getCitasDoctor = asyncHandler(async (req, res) => {
         throw new Error('No se encontró un perfil médico asociado a este usuario.');
     }
 
-    console.log("Usuario ID (Login):", req.usuario._id);
-    console.log("Médico ID (Perfil):", perfilMedico._id); 
-
     const citas = await Cita.find({ medico: perfilMedico._id })
         .populate('paciente', 'nombre email')
         .sort({ fecha: 1 });
@@ -169,4 +178,3 @@ module.exports = {
     reprogramarCita,   
     getCitasDoctor
 }
-

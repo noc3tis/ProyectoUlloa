@@ -7,8 +7,6 @@ const getMedicos = async (token) => {
     headers: { Authorization: `Bearer ${token}` },
   };
 
-  console.log("🔥 VERSIÓN ACTUALIZADA - IP 160.34... PUERTO 8000 🔥"); 
-
   const response = await axios.get(API_URL, config);
   return response.data;
 };
@@ -20,6 +18,7 @@ const crearPerfil = async (medicoData, token) => {
     },
   };
 
+  // Envio de formulario complejo (Especialidad, costos, etc.)
   const response = await axios.post(API_URL, medicoData, config);
   return response.data;
 };

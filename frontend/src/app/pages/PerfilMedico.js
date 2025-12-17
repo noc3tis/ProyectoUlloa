@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { crearPerfilMedico, obtenerPerfilMedico, reset } from '../features/medicos/medicoSlice';
 import Spinner from '../components/Spinner';
 
-const AltaMedico = () => {
+const PerfilMedico = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -12,6 +12,7 @@ const AltaMedico = () => {
     (state) => state.medicos
   );
 
+  // ESTADO DEL FORMULARIO (Controlled Components):
   const [formData, setFormData] = useState({
     especialidad: '',
     consultorio: '',
@@ -23,10 +24,15 @@ const AltaMedico = () => {
 
   const { especialidad, consultorio, horarioInicio, horarioFin, precioConsulta, experiencia } = formData;
 
+  // EFECTO DE CARGA INICIAL:
+  // Al entrar, pedimos el perfil actual del médico a la BD.
   useEffect(() => {
     dispatch(obtenerPerfilMedico());
   }, [dispatch]);
 
+  // Este useEffect "observa" la variable 'perfil' que viene de Redux.
+  // Cuando Redux recibe los datos del backend, este efecto se dispara y actualiza
+  // el estado local del formulario. Esto permite la funcionalidad de "Edición".
   useEffect(() => {
     if (perfil) {
       setFormData({
@@ -45,12 +51,10 @@ const AltaMedico = () => {
     if (isError) {
       alert(message);
     }
-
     if (isSuccess) {
       alert('Perfil guardado con éxito');
       navigate('/'); 
     }
-
     return () => {
       dispatch(reset());
     };
@@ -66,6 +70,9 @@ const AltaMedico = () => {
   const onSubmit = (e) => {
     e.preventDefault();
 
+    // Transformación de Datos:
+    // Estructuramos los datos planos del formulario al formato anidado
+    // que espera nuestro Schema de Mongoose en el backend.
     const datosParaEnviar = {
         especialidad,
         consultorio,
@@ -90,6 +97,7 @@ const AltaMedico = () => {
       <p>Esta información será visible para los pacientes.</p>
 
       <form onSubmit={onSubmit}>
+        {/* ... Inputs del formulario vinculados al state ... */}
         <div className="mb-3">
           <label>Especialidad</label>
           <select 
@@ -104,11 +112,12 @@ const AltaMedico = () => {
             <option value="Cardiologia">Cardiologia</option>
             <option value="Pediatria">Pediatría</option>
             <option value="Dermatologia">Dermatologia</option>
-            <option value="Dermatologia">Ginecologia</option>
-            <option value="Dermatologia">Traumatologia</option>
+            <option value="Ginecologia">Ginecologia</option>
+            <option value="Traumatologia">Traumatologia</option>
           </select>
         </div>
 
+        {/* ... Resto de campos (Consultorio, Precio, etc.) ... */}
         <div className="mb-3">
           <label>Dirección del Consultorio</label>
           <input
@@ -154,4 +163,4 @@ const AltaMedico = () => {
   );
 };
 
-export default AltaMedico;
+export default PerfilMedico;

@@ -8,12 +8,13 @@ const usuarioSchema = mongoose.Schema({
     email: {
         type: String,
         required: [true, 'Por favor agrega un email'],
-        unique: true
+        unique: true // Evita duplicados a nivel de base de datos
     },
     password: {
         type: String,
         required: [true, 'Por favor agrega una contraseña']
     },
+    // Control de roles simple 
     rol: {
         type: String,
         enum: ['paciente', 'medico'],

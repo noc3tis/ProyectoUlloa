@@ -3,25 +3,20 @@ import { useSelector, useDispatch } from 'react-redux';
 import { obtenerCitasDoctor, cancelarCita, reprogramarCita } from '../features/citas/citasSlice';
 import Spinner from '../components/Spinner';
 import { toast } from 'react-toastify';
-import { 
-    FaUserMd, 
-    FaCalendarDay, 
-    FaClock, 
-    FaEnvelope, 
-    FaStickyNote, 
-    FaMugHot,
-    FaUserInjured
-} from 'react-icons/fa';
+import { FaUserMd, FaCalendarDay, FaClock, FaEnvelope, FaStickyNote, FaMugHot, FaUserInjured } from 'react-icons/fa';
 
 const DashboardDoctor = () => {
     const dispatch = useDispatch();
     const { citas, isLoading, isError, message } = useSelector((state) => state.citas);
     const { user } = useSelector((state) => state.auth);
 
+    // ESTADO LOCAL (UI State):
+    // Manejamos la fecha del filtro localmente. Iniciamos con la fecha de hoy.
     const [fechaFiltro, setFechaFiltro] = useState(new Date().toISOString().split('T')[0]);
 
     useEffect(() => {
         if (isError) console.log(message);
+        // Acción Específica de Rol: Traemos todas las citas asignadas a este médico
         dispatch(obtenerCitasDoctor());
     }, [dispatch, isError, message]);
 
@@ -47,10 +42,13 @@ const DashboardDoctor = () => {
 
     if (isLoading) return <Spinner />;
 
+    // LÓGICA DE FILTRADO (Client-Side):
+    // Filtramos el arreglo global de citas basándonos en el input de fecha del usuario.
     const listaCitas = Array.isArray(citas) ? citas : [];
     const citasDelDia = listaCitas.filter(cita => {
         if (!cita.fecha) return false; 
         const fechaObj = new Date(cita.fecha);
+        // Convertimos a string local para comparar solo la parte de YYYY-MM-DD
         const fechaLocal = fechaObj.toLocaleDateString('en-CA');
         return fechaLocal === fechaFiltro;
     });
@@ -62,6 +60,7 @@ const DashboardDoctor = () => {
                 <p>Bienvenido, Dr. {user && user.nombre}</p>
             </div>
 
+            {/* Control de Agenda (Filtro por fecha) */}
             <div className="agenda-control text-center mb-4">
                 <label className="me-2"><FaCalendarDay /> Ver agenda del día: </label>
                 <input 
@@ -73,10 +72,12 @@ const DashboardDoctor = () => {
                 />
             </div>
 
+            {/* Renderizado de la Agenda Filtrada */}
             {citasDelDia.length > 0 ? (
                 <div className="agenda-container">
                     {citasDelDia.map((cita) => (
                         <div key={cita._id} className={`agenda-item ${cita.estado || 'pendiente'}`}>
+                            {/* ... Detalles de la cita ... */}
                             <div className="hora-box">
                                 <h3>
                                     <FaClock style={{marginRight: '5px'}}/>

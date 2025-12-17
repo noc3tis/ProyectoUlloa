@@ -52,4 +52,4 @@ const Dermatologia = () => {
   );
 };
 
-export default Dermatologia; // <--- 4. EXPORTAR CON EL NOMBRE CORRECTO
+export default Dermatologia; 
